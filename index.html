@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSP Solver with Ant Colony Optimization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #controls > div {
+            flex: 1 1 200px;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .visualization {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 20px; /* This creates space between the canvas and chart containers */
+        }
+        .canvas-container, .chart-container {
+            width: calc(50% - 10px); /* Adjust width to account for the gap */
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .canvas-container::before {
+            content: 'Please use mouse to plot the cities';
+            position: absolute;
+            top: -5px;
+            left: 5px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 2px 2px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .canvas-container {
+            position: relative;
+            background-color: #f0f8ff; /* Light blue background */
+            border: 2px solid #4CAF50; /* Green border */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px; /* Add 5px padding to create the gap */
+        }
+        #tspCanvas {
+            border: 2px solid gray;
+            max-width: calc(100% - 10px); /* Subtract 10px to account for the 5px gap on both sides */
+            max-height: calc(100% - 10px); /* Subtract 10px to account for the 5px gap on top and bottom */
+            width: auto !important;
+            height: auto !important;
+        }
+
+        #bestTourInfo {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #clearCities {
+            background-color: #f44336;
+        }
+        #clearCities:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <h1>TSP Solver with Ant Colony Optimization</h1>
+    
+    <div id="controls">
+        <div>
+            <label for="antCount">Number of Ants: <span id="antCountValue">20</span></label>
+            <input type="range" id="antCount" min="1" max="100" value="20">
+        </div>
+        <div>
+            <label for="alpha">Alpha: <span id="alphaValue">1.00</span></label>
+            <input type="range" id="alpha" min="0" max="5" step="0.1" value="1">
+        </div>
+        <div>
+            <label for="beta">Beta: <span id="betaValue">5.00</span></label>
+            <input type="range" id="beta" min="0" max="10" step="0.1" value="5">
+        </div>
+        <div>
+            <label for="evaporationRate">Evaporation Rate: <span id="evaporationRateValue">0.10</span></label>
+            <input type="range" id="evaporationRate" min="0" max="1" step="0.01" value="0.1">
+        </div>
+        <div>
+            <label for="Q">Q: <span id="QValue">1.00</span></label>
+            <input type="range" id="Q" min="0.1" max="10" step="0.1" value="1">
+        </div>
+        <div>
+            <label for="iterations">Iterations: <span id="iterationsValue">100</span></label>
+            <input type="range" id="iterations" min="10" max="1000" step="10" value="100">
+        </div>
+    </div>
+
+    <div>
+        <button id="runACO">Run ACO</button>
+        <button id="clearCities">Clear Cities</button>
+    </div>
+
+    <div id="bestTourInfo">
+        <h2>Best Tour Information</h2>
+        <p id="bestTourLength">Best Tour Length: N/A</p>
+        <p id="bestTourPath">Best Tour: N/A</p>
+    </div>
+    <div class="visualization">
+        <div class="canvas-container">
+            <canvas id="tspCanvas" width="400" height="400"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
