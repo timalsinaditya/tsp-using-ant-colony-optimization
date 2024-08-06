@@ -1,3 +1,18 @@
+class SeededRandom {
+    constructor(seed) {
+        this.seed = seed % 2147483647;
+        if (this.seed <= 0) this.seed += 2147483646;
+    }
+
+    next() {
+        return this.seed = this.seed * 16807 % 2147483647;
+    }
+
+    random() {
+        return (this.next() - 1) / 2147483646;
+    }
+}
+
 const canvas = document.getElementById('tspCanvas');
 const ctx = canvas.getContext('2d');
 canvas.width = 600;
@@ -24,14 +39,23 @@ let iterations = 100;
 let iterationData = [];
 let chart;
 
+let fixedStart = false;
+let startNode = 0;
+
+let rng;
+
+function initializeRNG(seed = 12345) {
+    rng = new SeededRandom(seed);
+}
+
 function resizeCanvas() {
-    const containerWidth = canvasContainer.clientWidth - 10; 
-    const containerHeight = canvasContainer.clientHeight - 10; 
-    
+    const containerWidth = canvasContainer.clientWidth - 10;
+    const containerHeight = canvasContainer.clientHeight - 10;
+
     const aspectRatio = 3 / 2;
-    
+
     let canvasWidth, canvasHeight;
-    
+
     if (containerWidth / containerHeight > aspectRatio) {
         canvasHeight = containerHeight;
         canvasWidth = canvasHeight * aspectRatio;
@@ -39,12 +63,12 @@ function resizeCanvas() {
         canvasWidth = containerWidth;
         canvasHeight = canvasWidth / aspectRatio;
     }
-    
+
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
     canvas.style.width = `${canvasWidth}px`;
     canvas.style.height = `${canvasHeight}px`;
-    
+
     if (cities.length > 0) {
         drawSolution();
     }
@@ -70,7 +94,11 @@ function initChart() {
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    beginAtZero: false
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Tour Length'
+                    }
                 },
                 x: {
                     title: {
@@ -81,6 +109,18 @@ function initChart() {
             }
         }
     });
+}
+
+function resetChart() {
+    chart.data.labels = [];
+    chart.data.datasets = [{
+        label: 'Best Tour Length',
+        data: [],
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1
+    }];
+    chart.options.scales.y.title.text = 'Tour Length';
+    chart.update();
 }
 
 function updateChart() {
@@ -141,9 +181,10 @@ function calculateTourLength(tour) {
 }
 
 function antTour() {
-    let tour = [Math.floor(Math.random() * cities.length)];
+    let start = fixedStart ? startNode : Math.floor(rng.random() * cities.length);
+    let tour = [start];
     let unvisited = new Set([...Array(cities.length).keys()]);
-    unvisited.delete(tour[0]);
+    unvisited.delete(start);
 
     while (unvisited.size > 0) {
         let current = tour[tour.length - 1];
@@ -154,14 +195,14 @@ function antTour() {
         });
 
         let sum = probabilities.reduce((sum, { probability }) => sum + probability, 0);
-        let random = Math.random() * sum;
+        let random = rng.random() * sum;
         let selected = probabilities.find(({ probability }) => (random -= probability) <= 0).city;
 
         tour.push(selected);
         unvisited.delete(selected);
     }
 
-    tour.push(tour[0]);
+    tour.push(start);
     return tour;
 }
 
@@ -170,6 +211,11 @@ async function runACO() {
         alert("Please add at least 2 cities before running the algorithm.");
         return;
     }
+
+    resetChart();
+
+    // Initialize the random number generator with a fixed seed
+    initializeRNG(12345); // You can change this seed value
 
     initializePheromones();
     globalBestTour = [];
@@ -180,7 +226,7 @@ async function runACO() {
         let tours = Array(antCount).fill().map(antTour);
         updatePheromones(tours);
 
-        let iterationBestTour = tours.reduce((best, tour) => 
+        let iterationBestTour = tours.reduce((best, tour) =>
             calculateTourLength(tour) < calculateTourLength(best) ? tour : best
         );
 
@@ -206,6 +252,64 @@ async function runACO() {
     bestTourLength = globalBestTourLength;
     drawSolution();
     updateBestTourInfo();
+}
+
+async function runConvergenceAnalysis() {
+    const parameterSets = [
+        { antCount: 10, alpha: 1, beta: 1 },
+        { antCount: 20, alpha: 1, beta: 5 },
+        { antCount: 30, alpha: 2, beta: 3 },
+    ];
+
+    chart.data.datasets = parameterSets.map((params, index) => ({
+        label: `Set ${index + 1}: Ants=${params.antCount}, α=${params.alpha}, β=${params.beta}`,
+        data: [],
+        borderColor: `hsl(${index * 360 / parameterSets.length}, 100%, 50%)`,
+        tension: 0.1
+    }));
+
+    chart.options.scales.y.title = {
+        display: true,
+        text: 'Best Tour Length'
+    };
+
+    // Initialize the random number generator with a fixed seed for the entire analysis
+    initializeRNG(12345); // You can change this seed value
+
+    for (let i = 0; i < iterations; i++) {
+        for (let j = 0; j < parameterSets.length; j++) {
+            const params = parameterSets[j];
+            antCount = params.antCount;
+            alpha = params.alpha;
+            beta = params.beta;
+
+            // Reinitialize RNG for each parameter set to ensure consistency
+            initializeRNG(12345 + j); // Using different seeds for each parameter set
+
+            let tours = Array(antCount).fill().map(antTour);
+            updatePheromones(tours);
+
+            let iterationBestTour = tours.reduce((best, tour) =>
+                calculateTourLength(tour) < calculateTourLength(best) ? tour : best
+            );
+
+            let iterationBestLength = calculateTourLength(iterationBestTour);
+            chart.data.datasets[j].data.push(iterationBestLength);
+        }
+
+        if (i === 0) {
+            chart.data.labels = [1];
+        } else {
+            chart.data.labels.push(i + 1);
+        }
+
+        if (i % 10 === 0) {
+            chart.update();
+            await new Promise(resolve => setTimeout(resolve, 0)); 
+        }
+    }
+
+    chart.update();
 }
 
 function drawSolution() {
@@ -240,10 +344,10 @@ canvas.addEventListener('click', (event) => {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     const minDistance = 20;
-    const isTooClose = cities.some(city => distance(city, {x, y}) < minDistance);
-    
+    const isTooClose = cities.some(city => distance(city, { x, y }) < minDistance);
+
     if (!isTooClose) {
         cities.push({ x, y });
         distances = cities.map(a => cities.map(b => distance(a, b)));
@@ -253,8 +357,61 @@ canvas.addEventListener('click', (event) => {
     }
 });
 
-document.getElementById('runACO').addEventListener('click', runACO);
+function updateUIElements() {
+    document.getElementById('antCountValue').textContent = antCount;
+    document.getElementById('alphaValue').textContent = alpha.toFixed(2);
+    document.getElementById('betaValue').textContent = beta.toFixed(2);
+    document.getElementById('evaporationRateValue').textContent = evaporationRate.toFixed(2);
+    document.getElementById('QValue').textContent = Q.toFixed(2);
+    document.getElementById('iterationsValue').textContent = iterations;
+    document.getElementById('antCount').value = antCount;
+    document.getElementById('alpha').value = alpha;
+    document.getElementById('beta').value = beta;
+    document.getElementById('evaporationRate').value = evaporationRate;
+    document.getElementById('Q').value = Q;
+    document.getElementById('iterations').value = iterations;
+    document.getElementById('fixedStart').checked = fixedStart;
+    document.getElementById('startNode').disabled = !fixedStart;
+    document.getElementById('startNode').value = startNode;
+}
 
+document.getElementById('antCount').addEventListener('input', (e) => {
+    antCount = parseInt(e.target.value);
+    updateUIElements();
+});
+document.getElementById('alpha').addEventListener('input', (e) => {
+    alpha = parseFloat(e.target.value);
+    updateUIElements();
+});
+document.getElementById('beta').addEventListener('input', (e) => {
+    beta = parseFloat(e.target.value);
+    updateUIElements();
+});
+document.getElementById('evaporationRate').addEventListener('input', (e) => {
+    evaporationRate = parseFloat(e.target.value);
+    updateUIElements();
+});
+document.getElementById('Q').addEventListener('input', (e) => {
+    Q = parseFloat(e.target.value);
+    updateUIElements();
+});
+document.getElementById('iterations').addEventListener('input', (e) => {
+    iterations = parseInt(e.target.value);
+    updateUIElements();
+});
+document.getElementById('fixedStart').addEventListener('change', (e) => {
+    fixedStart = e.target.checked;
+    updateUIElements();
+});
+document.getElementById('startNode').addEventListener('input', (e) => {
+    startNode = parseInt(e.target.value);
+    if (startNode >= cities.length) {
+        startNode = cities.length - 1;
+    }
+    updateUIElements();
+});
+
+document.getElementById('runACO').addEventListener('click', runACO);
 document.getElementById('clearCities').addEventListener('click', () => {
     cities = [];
     distances = [];
@@ -263,35 +420,11 @@ document.getElementById('clearCities').addEventListener('click', () => {
     globalBestTour = [];
     globalBestTourLength = Infinity;
     ctx.clearRect(0, 0, width, height);
-    chart.data.labels = [];
-    chart.data.datasets[0].data = [];
-    chart.update();
+    resetChart();
     updateBestTourInfo();
+    updateUIElements();
 });
-
-document.getElementById('antCount').addEventListener('input', (e) => {
-    antCount = parseInt(e.target.value);
-    document.getElementById('antCountValue').textContent = antCount;
-});
-document.getElementById('alpha').addEventListener('input', (e) => {
-    alpha = parseFloat(e.target.value);
-    document.getElementById('alphaValue').textContent = alpha.toFixed(2);
-});
-document.getElementById('beta').addEventListener('input', (e) => {
-    beta = parseFloat(e.target.value);
-    document.getElementById('betaValue').textContent = beta.toFixed(2);
-});
-document.getElementById('evaporationRate').addEventListener('input', (e) => {
-    evaporationRate = parseFloat(e.target.value);
-    document.getElementById('evaporationRateValue').textContent = evaporationRate.toFixed(2);
-});
-document.getElementById('Q').addEventListener('input', (e) => {
-    Q = parseFloat(e.target.value);
-    document.getElementById('QValue').textContent = Q.toFixed(2);
-});
-document.getElementById('iterations').addEventListener('input', (e) => {
-    iterations = parseInt(e.target.value);
-    document.getElementById('iterationsValue').textContent = iterations;
-});
+document.getElementById('runConvergence').addEventListener('click', runConvergenceAnalysis);
 
 initChart();
+updateUIElements();

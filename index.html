@@ -29,7 +29,24 @@
         }
         #controls > div {
             flex: 1 1 200px;
+            display: flex;
+            flex-direction: column;
         }
+        #controls input[type="range"] {
+            width: 100%;
+        }
+        #controls input[type="number"] {
+            width: 60px;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 5px;
+        }
+
         input[type="range"] {
             width: 100%;
         }
@@ -134,12 +151,21 @@
             <label for="iterations">Iterations: <span id="iterationsValue">100</span></label>
             <input type="range" id="iterations" min="10" max="1000" step="10" value="100">
         </div>
+        <div class="checkbox-container">
+            <label for="fixedStart">
+                <input type="checkbox" id="fixedStart">
+                Fixed Starting Node:
+            </label>
+            <input type="number" id="startNode" min="0" value="0" disabled>
+        </div>
     </div>
 
     <div>
         <button id="runACO">Run ACO</button>
         <button id="clearCities">Clear Cities</button>
+        <button id="runConvergence">Run Convergence Analysis</button>
     </div>
+
 
     <div id="bestTourInfo">
         <h2>Best Tour Information</h2>
