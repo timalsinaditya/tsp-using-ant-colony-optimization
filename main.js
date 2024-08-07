@@ -357,7 +357,7 @@ function bruteForceOptimalTour() {
 
 function validateACOSolution() {
     if (cities.length > 11) {
-        alert("Brute force validation is not recommended for more than 11 cities due to computational complexity.");
+        alert("Brute force not feasible for no of cities greater than 11.");
         return;
     }
 
