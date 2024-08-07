@@ -217,8 +217,7 @@ async function runACO() {
 
     resetChart();
 
-    // Initialize the random number generator with a fixed seed
-    initializeRNG(12345); // You can change this seed value
+    initializeRNG(12345);
 
     initializePheromones();
     globalBestTour = [];
@@ -278,8 +277,7 @@ async function runConvergenceAnalysis() {
         text: 'Best Tour Length'
     };
 
-    // Initialize the random number generator with a fixed seed for the entire analysis
-    initializeRNG(12345); // You can change this seed value
+    initializeRNG(12345);
 
     for (let i = 0; i < iterations; i++) {
         for (let j = 0; j < parameterSets.length; j++) {
@@ -288,9 +286,8 @@ async function runConvergenceAnalysis() {
             alpha = params.alpha;
             beta = params.beta;
 
-            // Reinitialize RNG for each parameter set to ensure consistency
-            initializeRNG(12345 + j); // Using different seeds for each parameter set
-
+            initializeRNG(12345 + j);
+	    
             let tours = Array(antCount).fill().map(antTour);
             updatePheromones(tours);
 
@@ -322,7 +319,6 @@ function bruteForceOptimalTour() {
     let optimalTour = [];
     let optimalLength = Infinity;
 
-    // Generate all possible permutations
     function* permutations(arr, n = arr.length) {
         if (n <= 1) yield arr.slice();
         else for (let i = 0; i < n; i++) {
@@ -332,13 +328,27 @@ function bruteForceOptimalTour() {
         }
     }
 
-    // Calculate length for all permutations
-    for (let perm of permutations([...Array(n).keys()])) {
-        perm.push(perm[0]); // Complete the tour
-        let length = calculateTourLength(perm);
-        if (length < optimalLength) {
-            optimalLength = length;
-            optimalTour = perm;
+    let cityIndices = [...Array(n).keys()];
+    
+    if (fixedStart) {
+        cityIndices.splice(startNode, 1);
+        
+        for (let perm of permutations(cityIndices)) {
+            let tour = [startNode, ...perm, startNode];
+            let length = calculateTourLength(tour);
+            if (length < optimalLength) {
+                optimalLength = length;
+                optimalTour = tour;
+            }
+        }
+    } else {
+        for (let perm of permutations(cityIndices)) {
+            let tour = [...perm, perm[0]];
+            let length = calculateTourLength(tour);
+            if (length < optimalLength) {
+                optimalLength = length;
+                optimalTour = tour;
+            }
         }
     }
 
@@ -355,7 +365,7 @@ function validateACOSolution() {
     const optimal = bruteForceOptimalTour();
     const end = performance.now();
 
-    const executionTime = (end - start) / 1000; // Convert to seconds
+    const executionTime = (end - start) / 1000;
     const difference = bestTourLength - optimal.length;
     const percentDifference = (difference / optimal.length * 100).toFixed(2);
 
