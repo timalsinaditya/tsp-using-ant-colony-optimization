@@ -41,6 +41,7 @@ let chart;
 
 let fixedStart = false;
 let startNode = 0;
+let ACOSolutionTime = 0;
 
 let rng;
 
@@ -207,6 +208,8 @@ function antTour() {
 }
 
 async function runACO() {
+    const start = performance.now();
+
     if (cities.length < 2) {
         alert("Please add at least 2 cities before running the algorithm.");
         return;
@@ -247,7 +250,9 @@ async function runACO() {
             await new Promise(resolve => setTimeout(resolve, 0));
         }
     }
-
+    const end = performance.now();
+    ACOSolutionTime = (end - start) / 1000;
+    
     bestTour = globalBestTour;
     bestTourLength = globalBestTourLength;
     drawSolution();
@@ -312,6 +317,60 @@ async function runConvergenceAnalysis() {
     chart.update();
 }
 
+function bruteForceOptimalTour() {
+    const n = cities.length;
+    let optimalTour = [];
+    let optimalLength = Infinity;
+
+    // Generate all possible permutations
+    function* permutations(arr, n = arr.length) {
+        if (n <= 1) yield arr.slice();
+        else for (let i = 0; i < n; i++) {
+            yield* permutations(arr, n - 1);
+            const j = n % 2 ? 0 : i;
+            [arr[n-1], arr[j]] = [arr[j], arr[n-1]];
+        }
+    }
+
+    // Calculate length for all permutations
+    for (let perm of permutations([...Array(n).keys()])) {
+        perm.push(perm[0]); // Complete the tour
+        let length = calculateTourLength(perm);
+        if (length < optimalLength) {
+            optimalLength = length;
+            optimalTour = perm;
+        }
+    }
+
+    return { tour: optimalTour, length: optimalLength };
+}
+
+function validateACOSolution() {
+    if (cities.length > 11) {
+        alert("Brute force validation is not recommended for more than 11 cities due to computational complexity.");
+        return;
+    }
+
+    const start = performance.now();
+    const optimal = bruteForceOptimalTour();
+    const end = performance.now();
+
+    const executionTime = (end - start) / 1000; // Convert to seconds
+    const difference = bestTourLength - optimal.length;
+    const percentDifference = (difference / optimal.length * 100).toFixed(2);
+
+    let validationResult = document.getElementById('validationResult');
+    validationResult.innerHTML = `
+        <h3>Validation Results</h3>
+        <p><span class="label">Optimal Tour:</span> <span class="optimal">${optimal.tour.slice(0, -1).join(' -> ')}</span></p>
+        <p><span class="label">Optimal Length:</span> <span class="optimal">${optimal.length.toFixed(2)}</span></p>
+        <p><span class="label">ACO Best Tour:</span> <span class="aco">${bestTour.slice(0, -1).join(' -> ')}</span></p>
+        <p><span class="label">ACO Best Length:</span> <span class="aco">${bestTourLength.toFixed(2)}</span></p>
+        <p><span class="label">Difference:</span> <span class="difference">${difference.toFixed(2)} (${percentDifference}%)</span></p>
+        <p class="execution-time"><span class="label">Brute Force Execution Time:</span> ${executionTime.toFixed(2)} seconds</p>
+        <p class="execution-time"><span class="label">ACO Execution Time:</span> ${ACOSolutionTime.toFixed(2)} seconds</p>
+    `;
+}
 function drawSolution() {
     ctx.clearRect(0, 0, width, height);
 
@@ -425,6 +484,7 @@ document.getElementById('clearCities').addEventListener('click', () => {
     updateUIElements();
 });
 document.getElementById('runConvergence').addEventListener('click', runConvergenceAnalysis);
+document.getElementById('validateSolution').addEventListener('click', validateACOSolution);
 
 initChart();
 updateUIElements();
