@@ -8,5 +8,6 @@ The [Traveling Salesman Problem(TSP)](https://en.m.wikipedia.org/wiki/Travelling
 This project attempts to find the solution to TSP using Ant Colony Optimization. The [documentation](./documentation.md) explains in detail about the project.
 
 # Live Demo
-The visualization is live [here](https://timalsinaditya.github.io/tsp-using-ant-colony-optimization/
-).
+The visualization is live [here](https://timalsinaditya.github.io/tsp-using-ant-colony-optimization/).
+
+![output](screenshot.png)
