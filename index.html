@@ -42,11 +42,9 @@
             display: flex;
             align-items: center;
         }
-
         .checkbox-container input[type="checkbox"] {
             margin-right: 5px;
         }
-
         input[type="range"] {
             width: 100%;
         }
@@ -54,16 +52,15 @@
             display: flex;
             justify-content: space-between;
             margin-top: 20px;
-            gap: 20px; /* This creates space between the canvas and chart containers */
+            gap: 20px;
         }
         .canvas-container, .chart-container {
-            width: calc(50% - 10px); /* Adjust width to account for the gap */
+            width: calc(50% - 10px);
             background-color: #fff;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
         .canvas-container::before {
             content: 'Please use mouse to plot the cities';
             position: absolute;
@@ -75,24 +72,22 @@
             border-radius: 4px;
             font-size: 14px;
         }
-
         .canvas-container {
             position: relative;
-            background-color: #f0f8ff; /* Light blue background */
-            border: 2px solid #4CAF50; /* Green border */
+            background-color: #f0f8ff;
+            border: 2px solid #4CAF50;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 5px; /* Add 5px padding to create the gap */
+            padding: 5px;
         }
         #tspCanvas {
             border: 2px solid gray;
-            max-width: calc(100% - 10px); /* Subtract 10px to account for the 5px gap on both sides */
-            max-height: calc(100% - 10px); /* Subtract 10px to account for the 5px gap on top and bottom */
+            max-width: calc(100% - 10px);
+            max-height: calc(100% - 10px);
             width: auto !important;
             height: auto !important;
         }
-
         #bestTourInfo {
             text-align: center;
             margin-top: 20px;
@@ -121,73 +116,139 @@
         #clearCities:hover {
             background-color: #da190b;
         }
-	#validateSolution {
-	background-color: #4CAF50;
-	border: none;
-	color: white;
-	padding: 10px 20px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 16px;
-	margin: 4px 2px;
-	cursor: pointer;
-	border-radius: 4px;
-	transition: background-color 0.3s;
-	}
-
-	#validateSolution:hover {
-	background-color: #45a049;
-	}
-
-	.validation-result {
-	margin-top: 20px;
-	padding: 20px;
-	background-color: #f9f9f9;
-	border: 1px solid #e0e0e0;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-	font-family: Arial, sans-serif;
-	}
-
-	.validation-result h3 {
-	margin-top: 0;
-	color: #333;
-	font-size: 1.4em;
-	border-bottom: 2px solid #4CAF50;
-	padding-bottom: 10px;
-	margin-bottom: 15px;
-	}
-
-	.validation-result p {
-	margin: 10px 0;
-	color: #555;
-	line-height: 1.6;
-	}
-
-	.validation-result .label {
-	font-weight: bold;
-	color: #333;
-	}
-
-	.validation-result .optimal {
-	color: #4CAF50;
-	}
-
-	.validation-result .aco {
-	color: #2196F3;
-	}
-
-	.validation-result .difference {
-	color: #FF5722;
-	font-weight: bold;
-	}
-
-	.validation-result .execution-time {
-	margin-top: 15px;
-	font-style: italic;
-	color: #777;
-	}
+        .validation-result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: Arial, sans-serif;
+        }
+        .validation-result h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.4em;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .validation-result p {
+            margin: 10px 0;
+            color: #555;
+            line-height: 1.6;
+        }
+        .validation-result .label {
+            font-weight: bold;
+            color: #333;
+        }
+        .validation-result .optimal {
+            color: #4CAF50;
+        }
+        .validation-result .aco {
+            color: #2196F3;
+        }
+        .validation-result .difference {
+            color: #FF5722;
+            font-weight: bold;
+        }
+        .validation-result .execution-time {
+            margin-top: 15px;
+            font-style: italic;
+            color: #777;
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .button-container button {
+            flex: 1 1 calc(25% - 10px);
+            max-width: calc(25% - 10px);
+            min-width: 150px;
+            height: 50px;
+            padding: 10px;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0; 
+        }
+    
+        #controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #controls > div {
+            flex: 1 1 200px;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px; 
+        }
+    
+        @media (max-width: 768px) {
+            #controls {
+                flex-direction: row;
+                gap: 10px;
+                padding: 10px; 
+            }
+    
+            #controls > div {
+                width: 100%;
+                margin-bottom: 10px; 
+            }
+    
+            .button-container {
+                flex-direction: column;
+                gap: 5px; 
+            }
+            
+            .button-container button {
+                flex: 1 1 100%;
+                max-width: 100%;
+                min-width: 0;
+                height: 40px;
+                margin: 0 0 5px 0;
+            }
+    
+            .visualization {
+                flex-direction: column;
+                width: 100%;
+            }
+    
+            .canvas-container {
+                width: 100%;
+                margin-bottom: 20px;
+                padding: 5px;
+            }
+            .chart-container {
+                width: 97%;
+                height: 300px;
+                margin-bottom: 20px;
+                padding: 5px;
+            }
+        }
+    
+        .canvas-container {
+            padding: 5px;
+            box-sizing: border-box;
+        }
+    
+        #tspCanvas {
+            width: 100% !important;
+            height: auto !important;
+            max-width: none;
+            max-height: none;
+        }
+    
     </style>
 </head>
 <body>
@@ -227,13 +288,12 @@
         </div>
     </div>
 
-    <div>
+    <div class="button-container">
         <button id="runACO">Run ACO</button>
         <button id="clearCities">Clear Cities</button>
         <button id="runConvergence">Run Convergence Analysis</button>
-	<button id="validateSolution">Validate Solution</button>
+        <button id="validateSolution">Validate Solution</button>
     </div>
-
 
     <div id="bestTourInfo">
         <h2>Best Tour Information</h2>
@@ -242,14 +302,15 @@
     </div>
     <div class="visualization">
         <div class="canvas-container">
-            <canvas id="tspCanvas" width="400" height="400"></canvas>
+            <canvas id="tspCanvas"></canvas>
         </div>
         <div class="chart-container">
             <canvas id="performanceChart"></canvas>
         </div>
     </div>
-    <script src="main.js"></script>
 
     <div id="validationResult" class="validation-result"></div>
+
+    <script src="main.js"></script>
 </body>
 </html>

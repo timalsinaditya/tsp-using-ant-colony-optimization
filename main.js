@@ -50,32 +50,21 @@ function initializeRNG(seed = 12345) {
 }
 
 function resizeCanvas() {
-    const containerWidth = canvasContainer.clientWidth - 10;
-    const containerHeight = canvasContainer.clientHeight - 10;
-
-    const aspectRatio = 3 / 2;
-
-    let canvasWidth, canvasHeight;
-
-    if (containerWidth / containerHeight > aspectRatio) {
-        canvasHeight = containerHeight;
-        canvasWidth = canvasHeight * aspectRatio;
-    } else {
-        canvasWidth = containerWidth;
-        canvasHeight = canvasWidth / aspectRatio;
-    }
-
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    canvas.style.width = `${canvasWidth}px`;
-    canvas.style.height = `${canvasHeight}px`;
+    const container = document.querySelector('.canvas-container');
+    const canvas = document.getElementById('tspCanvas');
+    const containerWidth = container.clientWidth - 10; 
+    const containerHeight = container.clientHeight - 10; 
+    canvas.width = containerWidth;
+    canvas.height = containerHeight;
 
     if (cities.length > 0) {
         drawSolution();
     }
 }
-resizeCanvas();
+
 window.addEventListener('resize', resizeCanvas);
+
+resizeCanvas();
 
 function initChart() {
     const ctx = document.getElementById('performanceChart').getContext('2d');
@@ -490,8 +479,10 @@ document.getElementById('clearCities').addEventListener('click', () => {
     globalBestTourLength = Infinity;
     ctx.clearRect(0, 0, width, height);
     resetChart();
+    resizeCanvas();
     updateBestTourInfo();
     updateUIElements();
+    document.getElementById('validationResult').innerHTML = '';
 });
 document.getElementById('runConvergence').addEventListener('click', runConvergenceAnalysis);
 document.getElementById('validateSolution').addEventListener('click', validateACOSolution);
