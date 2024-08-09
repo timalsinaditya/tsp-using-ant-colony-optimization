@@ -49,22 +49,22 @@ function initializeRNG(seed = 12345) {
     rng = new SeededRandom(seed);
 }
 
-function resizeCanvas() {
-    const container = document.querySelector('.canvas-container');
-    const canvas = document.getElementById('tspCanvas');
-    const containerWidth = container.clientWidth - 10; 
-    const containerHeight = container.clientHeight - 10; 
-    canvas.width = containerWidth;
-    canvas.height = containerHeight;
+// function resizeCanvas() {
+//     const container = document.querySelector('.canvas-container');
+//     const canvas = document.getElementById('tspCanvas');
+//     const containerWidth = container.clientWidth - 10; 
+//     const containerHeight = container.clientHeight - 10; 
+//     canvas.width = containerWidth;
+//     canvas.height = containerHeight;
 
-    if (cities.length > 0) {
-        drawSolution();
-    }
-}
+//     if (cities.length > 0) {
+//         drawSolution();
+//     }
+// }
 
-window.addEventListener('resize', resizeCanvas);
+// window.addEventListener('resize', resizeCanvas);
 
-resizeCanvas();
+// resizeCanvas();
 
 function initChart() {
     const ctx = document.getElementById('performanceChart').getContext('2d');
@@ -400,10 +400,13 @@ function updateBestTourInfo() {
 
 canvas.addEventListener('click', (event) => {
     const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;   
+    const scaleY = canvas.height / rect.height;  
 
-    const minDistance = 20;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+
+    const minDistance = 10;
     const isTooClose = cities.some(city => distance(city, { x, y }) < minDistance);
 
     if (!isTooClose) {
@@ -414,6 +417,7 @@ canvas.addEventListener('click', (event) => {
         alert("City is too close to an existing city. Please choose a different location.");
     }
 });
+
 
 function updateUIElements() {
     document.getElementById('antCountValue').textContent = antCount;
@@ -479,7 +483,7 @@ document.getElementById('clearCities').addEventListener('click', () => {
     globalBestTourLength = Infinity;
     ctx.clearRect(0, 0, width, height);
     resetChart();
-    resizeCanvas();
+    //resizeCanvas();
     updateBestTourInfo();
     updateUIElements();
     document.getElementById('validationResult').innerHTML = '';
